@@ -770,7 +770,7 @@ function createForm<FormValues: FormValuesShape>(
 
     registerField: (
       name: string,
-      subscriber: FieldSubscriber,
+      subscriber?: FieldSubscriber,
       subscription: FieldSubscription = {},
       fieldConfig?: FieldConfig
     ): Unsubscribe => {
@@ -780,11 +780,14 @@ function createForm<FormValues: FormValuesShape>(
       const index = state.fieldSubscribers[name].index++
 
       // save field subscriber callback
-      state.fieldSubscribers[name].entries[index] = {
-        subscriber: memoize(subscriber),
-        subscription,
-        notified: false
-      }
+      state.fieldSubscribers[name].entries[index] =
+        subscriber !== undefined
+          ? {
+              subscriber: memoize(subscriber),
+              subscription,
+              notified: false
+            }
+          : undefined
 
       if (!state.fields[name]) {
         // create initial field state
@@ -806,6 +809,13 @@ function createForm<FormValues: FormValuesShape>(
           validators: {},
           validating: false,
           visited: false
+        }
+
+        if (subscriber === undefined) {
+          state.fields[name].lastFieldState = publishFieldState(
+            state.formState,
+            state.fields[name]
+          )
         }
       }
       let haveValidator = false
@@ -850,7 +860,7 @@ function createForm<FormValues: FormValuesShape>(
           notifyFormListeners()
           notifyFieldListeners()
         })
-      } else {
+      } else if (subscriber !== undefined) {
         notifyFormListeners()
         notifyFieldListeners(name)
       }
@@ -885,7 +895,7 @@ function createForm<FormValues: FormValuesShape>(
             notifyFormListeners()
             notifyFieldListeners()
           })
-        } else if (lastOne) {
+        } else if (lastOne && subscriber !== undefined) {
           // values or errors may have changed
           notifyFormListeners()
         }
@@ -1104,6 +1114,28 @@ function createForm<FormValues: FormValuesShape>(
       )
       return () => {
         delete subscribers.entries[index]
+      }
+    },
+
+    subscribeToExistingField: (
+      name: string,
+      subscriber: FieldSubscriber,
+      subscription: FieldSubscription = {}
+    ): Unsubscribe => {
+      if (!state.fieldSubscribers[name]) {
+        state.fieldSubscribers[name] = { index: 0, entries: {} }
+      }
+      const index = state.fieldSubscribers[name].index++
+
+      // save field subscriber callback
+      state.fieldSubscribers[name].entries[index] = {
+        subscriber: memoize(subscriber),
+        subscription,
+        notified: false
+      }
+
+      return () => {
+        delete state.fieldSubscribers[name].entries[index]
       }
     }
   }
