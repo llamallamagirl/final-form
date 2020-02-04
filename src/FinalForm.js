@@ -750,11 +750,11 @@ function createForm<FormValues: FormValuesShape>(
       const savedDirtyValues = keepDirtyOnReinitialize
         ? Object.keys(safeFields).reduce((result, key) => {
             const field = safeFields[key]
-            const pristine = !Array.isArray(getIn(formState.values, key)) || field.isEqual(
+            const pristine = field.isEqual(
               getIn(formState.values, key),
               getIn(formState.initialValues || {}, key)
             )
-            if (!pristine) {
+            if (!pristine && field.modified) {
               result[key] = getIn(formState.values, key)
             }
             return result

@@ -1011,9 +1011,9 @@
 
         var savedDirtyValues = keepDirtyOnReinitialize ? Object.keys(safeFields).reduce(function (result, key) {
           var field = safeFields[key];
-          var pristine = !Array.isArray(getIn(formState.values, key)) || field.isEqual(getIn(formState.values, key), getIn(formState.initialValues || {}, key));
+          var pristine = field.isEqual(getIn(formState.values, key), getIn(formState.initialValues || {}, key));
 
-          if (!pristine) {
+          if (!pristine && field.modified) {
             result[key] = getIn(formState.values, key);
           }
 
