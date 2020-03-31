@@ -2,6 +2,9 @@ import _extends from '@babel/runtime/helpers/esm/extends';
 import _objectWithoutPropertiesLoose from '@babel/runtime/helpers/esm/objectWithoutPropertiesLoose';
 
 //      
+var keysCache = {};
+var keysRegex = /[.[\]]+/;
+
 var toPath = function toPath(key) {
   if (key === null || key === undefined || !key.length) {
     return [];
@@ -11,7 +14,11 @@ var toPath = function toPath(key) {
     throw new Error('toPath() expects a string');
   }
 
-  return key.split(/[.[\]]+/).filter(Boolean);
+  if (keysCache[key] == null) {
+    keysCache[key] = key.split(keysRegex).filter(Boolean);
+  }
+
+  return keysCache[key];
 };
 
 //      
@@ -325,7 +332,7 @@ var isPromise = (function (obj) {
   return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
 });
 
-var version = "4.18.7";
+var version = "4.19.0";
 
 var configOptions = ['debug', 'initialValues', 'keepDirtyOnReinitialize', 'mutators', 'onSubmit', 'validate', 'validateOnBlur'];
 
@@ -1051,6 +1058,16 @@ function createForm(config) {
       }
 
       var haveValidator = false;
+      var silent = fieldConfig && fieldConfig.silent;
+
+      var notify = function notify() {
+        if (silent) {
+          notifyFieldListeners(name);
+        } else {
+          notifyFormListeners();
+          notifyFieldListeners();
+        }
+      };
 
       if (fieldConfig) {
         haveValidator = !!(fieldConfig.getValidator && fieldConfig.getValidator());
@@ -1063,10 +1080,7 @@ function createForm(config) {
         ) {
             state.formState.initialValues = setIn(state.formState.initialValues || {}, name, fieldConfig.initialValue);
             state.formState.values = setIn(state.formState.values, name, fieldConfig.initialValue);
-            runValidation(undefined, function () {
-              notifyFormListeners();
-              notifyFieldListeners();
-            });
+            runValidation(undefined, notify);
           }
 
         if (fieldConfig.defaultValue !== undefined && fieldConfig.initialValue === undefined && getIn(state.formState.initialValues, name) === undefined) {
@@ -1075,13 +1089,9 @@ function createForm(config) {
       }
 
       if (haveValidator) {
-        runValidation(undefined, function () {
-          notifyFormListeners();
-          notifyFieldListeners();
-        });
+        runValidation(undefined, notify);
       } else {
-        notifyFormListeners();
-        notifyFieldListeners(name);
+        notify();
       }
 
       return function () {
