@@ -1,4 +1,5 @@
 import createForm from './FinalForm'
+import setFieldTouched from 'final-form-set-field-touched'
 
 const onSubmitMock = (values, callback) => {}
 
@@ -222,6 +223,7 @@ describe('FinalForm.setConfig', () => {
 
   it('should respect keepDirtyOnReinitialize on reinitalize', () => {
     const form = createForm({
+      mutators: { setFieldTouched },
       onSubmit: onSubmitMock,
       keepDirtyOnReinitialize: true,
       initialValues: {
@@ -242,12 +244,14 @@ describe('FinalForm.setConfig', () => {
     expect(spy).toHaveBeenCalledTimes(1)
 
     spy.mock.calls[0][0].change('baz')
+    form.mutators.setFieldTouched('foo', true)
 
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].initial).toBe('bar')
     expect(spy.mock.calls[1][0].value).toBe('baz')
 
     form.setConfig('initialValues', { foo: 'bax' })
+    form.mutators.setFieldTouched('foo', true)
 
     // new initial value, but same old dirty value
     expect(spy).toHaveBeenCalledTimes(3)
@@ -257,6 +261,7 @@ describe('FinalForm.setConfig', () => {
 
   it('should respect keepDirtyOnReinitialize on reinitalize, even if no initial values', () => {
     const form = createForm({
+      mutators: { setFieldTouched },
       onSubmit: onSubmitMock,
       keepDirtyOnReinitialize: true
     })
@@ -269,6 +274,7 @@ describe('FinalForm.setConfig', () => {
     expect(spy.mock.calls[0][0].value).toBeUndefined()
 
     spy.mock.calls[0][0].change('baz')
+    form.mutators.setFieldTouched('foo', true)
 
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].initial).toBeUndefined()
@@ -284,6 +290,7 @@ describe('FinalForm.setConfig', () => {
 
   it('should update keepDirtyOnReinitialize on setConfig("keepDirtyOnReinitialize", value)', () => {
     const form = createForm({
+      mutators: { setFieldTouched },
       onSubmit: onSubmitMock,
       initialValues: {
         foo: 'bar'
@@ -303,6 +310,7 @@ describe('FinalForm.setConfig', () => {
     expect(spy).toHaveBeenCalledTimes(1)
 
     spy.mock.calls[0][0].change('baz')
+    form.mutators.setFieldTouched('foo', true)
 
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].initial).toBe('bar')
@@ -322,6 +330,7 @@ describe('FinalForm.setConfig', () => {
     expect(spy).toHaveBeenCalledTimes(3)
 
     spy.mock.calls[0][0].change('dog')
+    form.mutators.setFieldTouched('foo', true)
 
     expect(spy).toHaveBeenCalledTimes(4)
     expect(spy.mock.calls[3][0].initial).toBe('bax')
@@ -337,6 +346,7 @@ describe('FinalForm.setConfig', () => {
 
   it('should reinitialize non-registered values with keepDirtyOnReinitialize, on form reinitalize', () => {
     const form = createForm({
+      mutators: { setFieldTouched },
       onSubmit: onSubmitMock,
       keepDirtyOnReinitialize: true,
       initialValues: {
@@ -367,6 +377,7 @@ describe('FinalForm.setConfig', () => {
     expect(spy).toHaveBeenCalledTimes(1)
 
     spy.mock.calls[0][0].change('baz')
+    form.mutators.setFieldTouched('foo', true)
 
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].initial).toBe('bar')
