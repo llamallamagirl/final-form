@@ -984,7 +984,7 @@ function createForm(config) {
         var field = safeFields[key];
         var pristine = field.isEqual(getIn(formState.values, key), getIn(formState.initialValues || {}, key));
 
-        if (!pristine && field.modified) {
+        if (!pristine && field.modified && field.touched) {
           result[key] = getIn(formState.values, key);
         }
 
