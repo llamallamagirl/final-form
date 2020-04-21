@@ -754,7 +754,7 @@ function createForm<FormValues: FormValuesShape>(
               getIn(formState.values, key),
               getIn(formState.initialValues || {}, key)
             )
-            if (!pristine && field.modified && field.touched) {
+            if (!pristine && field.modified && (field.touched || field.active)) {
               result[key] = getIn(formState.values, key)
             }
             return result
